@@ -78,7 +78,11 @@ def main():
 	logger.info("Now authenticated for " + athlete.firstname + " " + athlete.lastname)
 
 	# Creating an archive folder to put uploaded .gpx files
-	archive = "../archive"
+	ARCHIVE = os.environ.get("ARCHIVE")
+	if not ARCHIVE:
+		ARCHIVE = "archive"
+	if not os.path.exists(ARCHIVE):
+		os.makedirs(ARCHIVE)
 
 	# Function to convert the HH:MM:SS in the Runkeeper CSV to seconds
 	def duration_calc(duration):
@@ -148,7 +152,7 @@ def main():
 							# deal with duplicate type of error, if duplicate then continue with next file, else stop
 							if errStr.find('duplicate of activity'):
 								logger.info("Moving duplicate activity file {}".format(gpxfile))
-								shutil.move(gpxfile,archive)
+								shutil.move(gpxfile,ARCHIVE)
 								isDuplicate = True
 								logger.warn("Duplicate File " + gpxfile)
 							else:
@@ -173,7 +177,7 @@ def main():
 						logger.info("Uploaded " + gpxfile + " - Activity id: " + str(upResult.id))
 						activity_counter += 1
 
-						shutil.move(gpxfile, archive)
+						shutil.move(gpxfile, ARCHIVE)
 					else:
 						logger.warn("No file found for " + gpxfile + "!")
 
