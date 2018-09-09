@@ -45,3 +45,4 @@ The primary changes from the original branch are updating the CSV file to be rea
 * added optional command argument to select distance unit
 * replaced logger function by logging module
 * fixed archive to be folder and not a file (last archived GPX)
+* handle Stravalib authorization error a bit nicer

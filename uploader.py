@@ -74,7 +74,11 @@ def main():
 
 	# You need to run the strava_local_client.py script - with your application's ID and secret - to generate the access token.
 	client.access_token = args.access_token
-	athlete = client.get_athlete()
+	try:
+		athlete = client.get_athlete()
+	except exc.AccessUnauthorized:
+		logger.error("Strava authorization error: check your access token.")
+		exit(1)
 	logger.info("Now authenticated for " + athlete.firstname + " " + athlete.lastname)
 
 	# Creating an archive folder to put uploaded .gpx files
