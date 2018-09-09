@@ -31,7 +31,7 @@ Borrows liberally from @anthonywu's [Strava API Experiment](https://github.com/a
 
 You can use this script to upload a non-Runkeeper file in CSV format.  The current Runkeeper CSV file format includes the following columns: Activity Id, Date,Type, Route Name, Distance (mi), Duration, Average Pace, Average Speed (mph), Calories Burned, Climb (ft), Average Heart Rate (bpm), Friend's Tagged, Notes, GPX File.  If you wish to upload a non-Runkeeper file you have to create a cardioActivities.csv in this folder containing at least the following columns: Activity Id, Date, Type, Distance (mi), Duration.  The non-Runkeeper file must have matching column names to the Runkeeper original!  The GPX file if included should be a filename located in the same folder.
 
-### Some specific information about formatting requirements:**
+### Some specific information about formatting requirements
 - The Activity Id is just an internal identifier that must be unique per activity.  You can use numbers, letters, whatever.
 - Date format must be: YYYY-MM-DD HH:MM:SS.
 - Distance can be decimal formatted in miles or km. Default this is miles, but with the `--distance_unit` command argument, this can be changed to km. This is converted to meters for Strava.
