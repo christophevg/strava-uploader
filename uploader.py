@@ -8,6 +8,40 @@ import time
 import datetime as dt
 from datetime import datetime
 import argparse
+import logging
+
+def setup_logging():
+	logger = logging.getLogger()
+
+	# optionally change log level, default is info
+	LOG_LEVEL = os.environ.get("LOG_LEVEL")
+	if not LOG_LEVEL:
+	  LOG_LEVEL = "INFO"
+	logger.setLevel(logging.getLevelName(LOG_LEVEL))
+
+	# add logging to console
+	consoleHandler = logging.StreamHandler()
+	formatter = logging.Formatter(
+	  '%(asctime)s - [%(levelname)-5.5s] - %(message)s'
+	)
+	consoleHandler.setFormatter(formatter)
+	logger.addHandler(consoleHandler)
+
+	# optionally create a log file
+	LOG_FILE = os.environ.get("LOG_FILE")
+	if LOG_FILE:
+	  if not os.path.exists(LOG_FILE):
+	    with open(LOG_FILE, "a"):
+	      os.utime(LOG_FILE, None)
+	  fileHandler = logging.FileHandler(LOG_FILE)
+	  fileHandler.setFormatter(formatter)
+	  logger.addHandler(fileHandler)
+
+	# silence some other modules
+	logging.getLogger("stravalib").setLevel(logging.WARNING)
+	logging.getLogger("requests").setLevel(logging.WARNING)
+	logging.getLogger("urllib3").setLevel(logging.WARNING)
+	return logger
 
 def process_arguments():
 	description = "Uploads Runkeeper data exports (GPX and CSV) to Strava."
@@ -25,26 +59,23 @@ def process_arguments():
 	return parser.parse_args()
 
 def main():
+	logger = setup_logging()
 	args = process_arguments()
 
 	distance_factor = 1000 if args.distance_unit == "km" else 1609.344
 	distance_label	= "Distance (" + args.distance_unit + ")"
 
-	# Creating a log file and a logging function
-	log = open("log.txt","a+")
-	now = str(datetime.now())
-	def logger (message):
-		log.write(now + " | " + message + "\n")
-		print (message)
+	logger.debug("distance factor = " + str(distance_factor))
+	logger.debug("distance label  = " + str(distance_label))
 
 	# Opening the connection to Strava
-	logger("Connecting to Strava")
+	logger.info("Connecting to Strava")
 	client = Client()
 
 	# You need to run the strava_local_client.py script - with your application's ID and secret - to generate the access token.
 	client.access_token = args.access_token
 	athlete = client.get_athlete()
-	logger("Now authenticated for " + athlete.firstname + " " + athlete.lastname)
+	logger.info("Now authenticated for " + athlete.firstname + " " + athlete.lastname)
 
 	# Creating an archive folder to put uploaded .gpx files
 	archive = "../archive"
@@ -91,7 +122,7 @@ def main():
 		activity_counter = 0
 		for row in activities:
 			if activity_counter >= 599:
-				logger("Upload count at 599 - pausing uploads for 15 minutes to avoid rate-limit")
+				logger.info("Upload count at 599 - pausing uploads for 15 minutes to avoid rate-limit")
 				time.sleep(900)
 				activity_counter = 0
 			else:
@@ -103,7 +134,7 @@ def main():
 					gpxfile = row['GPX File']
 					strava_activity_type = activity_translator(str(row['Type']))
 					if gpxfile in os.listdir('.'):
-						logger("Uploading " + gpxfile)
+						logger.info("Uploading " + gpxfile)
 						try:
 							upload = client.upload_activity(
 								activity_file = open(gpxfile,'r'),
@@ -113,43 +144,43 @@ def main():
 								activity_type = strava_activity_type
 								)
 						except exc.ActivityUploadFailed as err:
-							logger("Uploading problem raised: {}".format(err))
 							errStr = str(err)
 							# deal with duplicate type of error, if duplicate then continue with next file, else stop
 							if errStr.find('duplicate of activity'):
-								logger("Moving duplicate activity file {}".format(gpxfile))
+								logger.info("Moving duplicate activity file {}".format(gpxfile))
 								shutil.move(gpxfile,archive)
 								isDuplicate = True
-								logger("Duplicate File " + gpxfile)
+								logger.warn("Duplicate File " + gpxfile)
 							else:
+								logger.error("Uploading problem raised: {}".format(err))
 								exit(1)
 
 						except ConnectionError as err:
-							logger("No Internet connection: {}".format(err))
+							logger.error("No Internet connection: {}".format(err))
 							exit(1)
 
-						logger("Upload succeeded.\nWaiting for response...")
+						logger.info("Upload succeeded.\nWaiting for response...")
 
 						try:
 							upResult = upload.wait()
 						except HTTPError as err:
-							logger("Problem raised: {}\nExiting...".format(err))
+							logger.error("Problem raised: {}\nExiting...".format(err))
 							exit(1)
 						except:
-							logger("Another problem occured, sorry...")
+							logger.error("Another problem occured, sorry...")
 							exit(1)
 						
-						logger("Uploaded " + gpxfile + " - Activity id: " + str(upResult.id))
+						logger.info("Uploaded " + gpxfile + " - Activity id: " + str(upResult.id))
 						activity_counter += 1
 
 						shutil.move(gpxfile, archive)
 					else:
-						logger("No file found for " + gpxfile + "!")
+						logger.warn("No file found for " + gpxfile + "!")
 
 				#if no gpx file, upload the data from the CSV
 				else:
 					if row['Activity Id'] not in log:
-						logger("Manually uploading " + row['Activity Id'])
+						logger.info("Manually uploading " + row['Activity Id'])
 						# convert to total time in seconds
 						dur = duration_calc(row['Duration'])
 						# convert to meters
@@ -177,15 +208,14 @@ def main():
 								activity_type = strava_activity_type
 								)
 								
-							logger("Manually created " + row['Activity Id'])
+							logger.info("Manually created " + row['Activity Id'])
 							activity_counter += 1
 
 						except ConnectionError as err:
-							logger("No Internet connection: {}".format(err))
+							logger.error("No Internet connection: {}".format(err))
 							exit(1)
 
-		logger("Complete! Logged " + str(activity_counter) + " activities.")
+		logger.info("Complete! Logged " + str(activity_counter) + " activities.")
 
 if __name__ == '__main__':
 	main()
-

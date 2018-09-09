@@ -43,3 +43,4 @@ The primary changes from the original branch are updating the CSV file to be rea
 ### Patches in this branch
 * added required command argument to provide access token without changing the script
 * added optional command argument to select distance unit
+* replaced logger function by logging module
