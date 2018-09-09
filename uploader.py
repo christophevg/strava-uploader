@@ -7,8 +7,20 @@ import shutil
 import time
 import datetime as dt
 from datetime import datetime
+import argparse
+
+def process_arguments():
+	description = "Uploads Runkeeper data exports (GPX and CSV) to Strava."
+	parser = argparse.ArgumentParser(description=description)
+	parser.add_argument(
+		"access_token",
+		type=str,
+		help="Strava API access token."
+	)
+	return parser.parse_args()
 
 def main():
+	args = process_arguments()
 
 	# Creating a log file and a logging function
 	log = open("log.txt","a+")
@@ -22,8 +34,7 @@ def main():
 	client = Client()
 
 	# You need to run the strava_local_client.py script - with your application's ID and secret - to generate the access token.
-	access_token = "your_token" # replace this with your token
-	client.access_token = access_token
+	client.access_token = args.access_token
 	athlete = client.get_athlete()
 	logger("Now authenticated for " + athlete.firstname + " " + athlete.lastname)
 

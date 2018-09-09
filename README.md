@@ -37,4 +37,8 @@ You can use this script to upload a non-Runkeeper file in CSV format.  The curre
 - Pip install requirements only works with versions of pip < 9.0.3.  I did not update the strava_local_client.py file to work with the updated pip as it was very simple to downgrade pip to a workable version.
 - When manually creating an activity (no GPX file), only the following information is saved: Date, Type, Distance (mi), and Duration.  The rest of the file row contents are ignored.
 
+### Patches merged from [https://github.com/possibilityleft/strava-uploader](https://github.com/possibilityleft/strava-uploader)
 The primary changes from the original branch are updating the CSV file to be read as a dictionary, allowing Runkeeper to change their file format all they want as long as they keep the important column headers the same.  I did this because they added some new columns since the original script was written and it was difficult to figure out what the old file format was, and what updates needed to be made to accomodate the new format.
+
+### Patches in this branch
+* added required command argument to provide access token without changing the script
