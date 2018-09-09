@@ -17,10 +17,18 @@ def process_arguments():
 		type=str,
 		help="Strava API access token."
 	)
+	parser.add_argument(
+		"-d", "--distance_unit",
+		choices=["mi", "km"], default="mi",
+		help="unit of distance."
+	)
 	return parser.parse_args()
 
 def main():
 	args = process_arguments()
+
+	distance_factor = 1000 if args.distance_unit == "km" else 1609.344
+	distance_label	= "Distance (" + args.distance_unit + ")"
 
 	# Creating a log file and a logging function
 	log = open("log.txt","a+")
@@ -145,7 +153,7 @@ def main():
 						# convert to total time in seconds
 						dur = duration_calc(row['Duration'])
 						# convert to meters
-						dist = float(row['Distance (mi)'])*1609.344
+						dist = float(row[distance_label]) * distance_factor
 						starttime = datetime.strptime(str(row['Date']),"%Y-%m-%d %H:%M:%S")
 						strava_activity_type = activity_translator(str(row['Type']))
 

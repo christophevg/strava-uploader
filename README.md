@@ -31,7 +31,7 @@ You can use this script to upload a non-Runkeeper file in CSV format.  The curre
 **Some specific information about formatting requirements:**
 - The Activity Id is just an internal identifier that must be unique per activity.  You can use numbers, letters, whatever.
 - Date format must be: YYYY-MM-DD HH:MM:SS.
-- Distance should be decimal formatted in miles.  This is converted to meters for Strava.
+- Distance can be decimal formatted in miles or km. Default this is miles, but with the `--distance_unit` command argument, this can be changed to km. This is converted to meters for Strava.
 - Duration must be formatted as MM:SS even for times over 1 hour!  So 1 hour 5 minutes 3 seconds = 65:03.  This is converted to total duration in seconds in the duration_calc function if you want to use a different format.
 - Some attribute errors are returned when running this script which seem to be related to missing pieces in the create_activity API call; however, the activity is still successfully uploaded if these errors are received.
 - Pip install requirements only works with versions of pip < 9.0.3.  I did not update the strava_local_client.py file to work with the updated pip as it was very simple to downgrade pip to a workable version.
@@ -42,3 +42,4 @@ The primary changes from the original branch are updating the CSV file to be rea
 
 ### Patches in this branch
 * added required command argument to provide access token without changing the script
+* added optional command argument to select distance unit
