@@ -187,41 +187,40 @@ def main():
 
 				#if no gpx file, upload the data from the CSV
 				else:
-					if row['Activity Id'] not in log:
-						logger.info("Manually uploading " + row['Activity Id'])
-						# convert to total time in seconds
-						dur = duration_calc(row['Duration'])
-						# convert to meters
-						dist = float(row[distance_label]) * distance_factor
-						starttime = datetime.strptime(str(row['Date']),"%Y-%m-%d %H:%M:%S")
-						strava_activity_type = activity_translator(str(row['Type']))
+					logger.info("Manually uploading " + row['Activity Id'])
+					# convert to total time in seconds
+					dur = duration_calc(row['Duration'])
+					# convert to meters
+					dist = float(row[distance_label]) * distance_factor
+					starttime = datetime.strptime(str(row['Date']),"%Y-%m-%d %H:%M:%S")
+					strava_activity_type = activity_translator(str(row['Type']))
 
-						# designates part of day for name assignment above, matching Strava convention for GPS activities
-						if 3 <= starttime.hour <= 11:
-							part = "Morning "
-						elif 12 <= starttime.hour <= 4:
-							part = "Afternoon "
-						elif 5 <= starttime.hour <=7:
-							part = "Evening "
-						else:
-							part = "Night "
-						
-						try:
-							upload = client.create_activity(
-								name = part + strava_activity_type + " (Manual)",
-								start_date_local = starttime,
-								elapsed_time = dur,
-								distance = dist,
-								description = row['Notes'],
-								activity_type = strava_activity_type
-								)
-								
-							logger.info("Manually created " + row['Activity Id'])
-							activity_counter += 1
+					# designates part of day for name assignment above, matching Strava convention for GPS activities
+					if 3 <= starttime.hour <= 11:
+						part = "Morning "
+					elif 12 <= starttime.hour <= 4:
+						part = "Afternoon "
+					elif 5 <= starttime.hour <=7:
+						part = "Evening "
+					else:
+						part = "Night "
+					
+					try:
+						upload = client.create_activity(
+							name = part + strava_activity_type + " (Manual)",
+							start_date_local = starttime,
+							elapsed_time = dur,
+							distance = dist,
+							description = row['Notes'],
+							activity_type = strava_activity_type
+							)
+							
+						logger.info("Manually created " + row['Activity Id'])
+						activity_counter += 1
 
-						except ConnectionError as err:
-							logger.error("No Internet connection: {}".format(err))
-							exit(1)
+					except ConnectionError as err:
+						logger.error("No Internet connection: {}".format(err))
+						exit(1)
 
 		logger.info("Complete! Logged " + str(activity_counter) + " activities.")
 
